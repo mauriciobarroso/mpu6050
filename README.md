@@ -1,2 +1,12 @@
-# mpu6050
-ESP-IDF MPU6050 component
+# ESP-IDF MPU6050 Component
+## Features
+
+TBD
+
+## How to use
+
+TBD
+
+## License
+
+MIT license
