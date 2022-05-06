@@ -85,9 +85,18 @@ esp_err_t mpu6050_init(mpu6050_t * const me, uint8_t dev_addr, i2c_port_t i2c_nu
 
 	me->i2c_num = i2c_num;
 
-	/* todo: implement error handling */
 	ret = mpu6050_wake_up(me);
+
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
 	ret = mpu6050_set_acce_fs(me, acce_fs);
+
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
 	ret = mpu6050_set_gyro_fs(me, gyro_fs);
 
 	return ret;
@@ -95,8 +104,8 @@ esp_err_t mpu6050_init(mpu6050_t * const me, uint8_t dev_addr, i2c_port_t i2c_nu
 
 esp_err_t mpu6050_get_device_id(mpu6050_t * const me, uint8_t * device_id) {
 	esp_err_t ret;
-
     uint8_t data_tmp;
+
     ret = mpu6050_read_reg(me, MPU6050_WHO_AM_I, &data_tmp, 1);
     * device_id = data_tmp;
 
@@ -105,7 +114,6 @@ esp_err_t mpu6050_get_device_id(mpu6050_t * const me, uint8_t * device_id) {
 
 esp_err_t mpu6050_wake_up(mpu6050_t * const me) {
 	esp_err_t ret;
-
     uint8_t data_tmp;
 
     ret = mpu6050_read_reg(me, MPU6050_PWR_MGMT_1, &data_tmp, 1);
@@ -122,7 +130,6 @@ esp_err_t mpu6050_wake_up(mpu6050_t * const me) {
 
 esp_err_t mpu6050_sleep(mpu6050_t * const me) {
 	esp_err_t ret;
-
     uint8_t data_tmp;
 
     ret = mpu6050_read_reg(me, MPU6050_PWR_MGMT_1, &data_tmp, 1);
@@ -139,9 +146,8 @@ esp_err_t mpu6050_sleep(mpu6050_t * const me) {
 
 esp_err_t mpu6050_set_acce_fs(mpu6050_t * const me, mpu6050_acce_fs_t acce_fs) {
 	esp_err_t ret;
-
-	printf("set acce\n");
     uint8_t data_tmp;
+
     ret = mpu6050_read_reg(me, MPU6050_ACCEL_CONFIG, &data_tmp, 1);
 
     if (ret != ESP_OK) {
@@ -159,9 +165,8 @@ esp_err_t mpu6050_set_acce_fs(mpu6050_t * const me, mpu6050_acce_fs_t acce_fs) {
 
 esp_err_t mpu6050_set_gyro_fs(mpu6050_t * const me, mpu6050_gyro_fs_t gyro_fs) {
 	esp_err_t ret;
-
-	printf("set gyro\n");
     uint8_t data_tmp;
+
     ret = mpu6050_read_reg(me, MPU6050_GYRO_CONFIG, &data_tmp, 1);
 
     if (ret != ESP_OK) {
@@ -178,8 +183,8 @@ esp_err_t mpu6050_set_gyro_fs(mpu6050_t * const me, mpu6050_gyro_fs_t gyro_fs) {
 
 esp_err_t mpu6050_get_acce_fs(mpu6050_t * const me, mpu6050_acce_fs_t * acce_fs) {
 	esp_err_t ret;
-
     uint8_t data_tmp;
+
     ret = mpu6050_read_reg(me, MPU6050_ACCEL_CONFIG, &data_tmp, 1);
     data_tmp = (data_tmp >> 3) & 0x03;
     * acce_fs = data_tmp;
@@ -189,8 +194,8 @@ esp_err_t mpu6050_get_acce_fs(mpu6050_t * const me, mpu6050_acce_fs_t * acce_fs)
 
 esp_err_t mpu6050_get_gyro_fs(mpu6050_t * const me, mpu6050_gyro_fs_t * gyro_fs) {
 	esp_err_t ret;
-
     uint8_t data_tmp;
+
     ret = mpu6050_read_reg(me, MPU6050_GYRO_CONFIG, &data_tmp, 1);
     data_tmp = (data_tmp >> 3) & 0x03;
     * gyro_fs = data_tmp;
@@ -254,8 +259,8 @@ esp_err_t mpu6050_get_gyro_sensitivity(mpu6050_t * const me, float * gyro_sensit
 
 esp_err_t mpu6050_get_raw_acce(mpu6050_t * const me, mpu6050_raw_acce_value_t * raw_acce_value) {
 	esp_err_t ret;
-
     uint8_t data_tmp[6] = {0};
+
     ret = mpu6050_read_reg(me, MPU6050_ACCEL_XOUT_H, data_tmp, 6);
     raw_acce_value->raw_acce_x = (int16_t)((data_tmp[0] << 8) + (data_tmp[1]));
     raw_acce_value->raw_acce_y = (int16_t)((data_tmp[2] << 8) + (data_tmp[3]));
@@ -266,8 +271,8 @@ esp_err_t mpu6050_get_raw_acce(mpu6050_t * const me, mpu6050_raw_acce_value_t * 
 
 esp_err_t mpu6050_get_raw_gyro(mpu6050_t * const me, mpu6050_raw_gyro_value_t * raw_gyro_value) {
 	esp_err_t ret;
-
     uint8_t data_tmp[6] = {0};
+
     ret = mpu6050_read_reg(me, MPU6050_GYRO_XOUT_H, data_tmp, 6);
     raw_gyro_value->raw_gyro_x = (int16_t)((data_tmp[0] << 8) + (data_tmp[1]));
     raw_gyro_value->raw_gyro_y = (int16_t)((data_tmp[2] << 8) + (data_tmp[3]));
@@ -304,6 +309,7 @@ esp_err_t mpu6050_get_gyro(mpu6050_t * const me, mpu6050_gyro_value_t * gyro_val
 	esp_err_t ret;
     float gyro_sensitivity;
     mpu6050_raw_gyro_value_t raw_gyro;
+
     ret = mpu6050_get_gyro_sensitivity(me, &gyro_sensitivity);
 
     if (ret != ESP_OK) {
@@ -330,8 +336,6 @@ esp_err_t mpu6050_read_reg(mpu6050_t * const me, uint8_t reg_addr, uint8_t * dat
 
 esp_err_t mpu6050_write_reg(mpu6050_t * const me, uint8_t reg_addr, uint8_t * data) {
     uint8_t write_buf[2] = {reg_addr, * data};
-
-    printf("reg_addr=%X, data=%x\n", reg_addr, * data);
 
     return i2c_master_write_to_device(me->i2c_num, me->dev_addr, write_buf, sizeof(write_buf), I2C_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
